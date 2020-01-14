@@ -1,0 +1,233 @@
+SET NOCOUNT ON
+SET DATEFORMAT dmy
+GO
+
+USE master
+GO
+
+IF EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = 'Eventi')  
+	DROP DATABASE [Eventi]
+GO
+
+CREATE DATABASE [Eventi]
+GO
+
+USE [Eventi]
+GO
+
+CREATE TABLE Utente(
+	username VARCHAR(50) PRIMARY KEY,
+	password VARCHAR(8) NOT NULL,
+	livello VARCHAR(50) NOT NULL
+)
+GO
+
+CREATE TABLE Evento(
+	id INT PRIMARY KEY,
+	titolo VARCHAR(300) NOT NULL,
+	sponsor VARCHAR(100) NULL,
+	tipo VARCHAR(50) NULL
+)
+GO
+
+CREATE TABLE Sala(
+	nome VARCHAR(100) PRIMARY KEY,
+	capienza INT NOT NULL,
+	proiettore BIT NOT NULL,
+	microfono BIT NOT NULL,
+	tv BIT NOT NULL,
+	stereo BIT NOT NULL,
+	pc INT NOT NULL,
+)
+GO
+
+CREATE TABLE Prenotazione(
+	username VARCHAR(50) NOT NULL REFERENCES UTENTE,
+	nome varchar(100) NOT NULL REFERENCES SALA,
+	inizio DATETIME NOT NULL,
+	fine DATETIME NOT NULL,
+	evento INT NOT NULL REFERENCES EVENTO,
+	adminC VARCHAR(50) NULL REFERENCES UTENTE,
+	PRIMARY KEY(nome,inizio)
+)
+GO
+
+Insert into [Utente] values('mrossi','xxx','admin')
+Insert into [Utente] values('pnavi','xxx','admin')
+Insert into [Utente] values('gtrota','xxx','user')
+Insert into [Utente] values('vparri','xxx','user')
+Insert into [Utente] values('rventi','xxx','user')
+
+Insert into [Sala] values('rosa bianca',100,1,1,0,0,40)
+Insert into [Sala] values('violetta',70,1,1,0,0,0)
+Insert into [Sala] values('bocca di leone',200,1,1,1,1,0)
+Insert into [Sala] values('gardenia',100,1,1,1,1,40)
+Insert into [Sala] values('gelsomino',180,1,1,1,1,60)
+
+Insert into [Sala] values('giacinto',50,0,1,0,1,0)
+Insert into [Sala] values('ibisco',50,0,1,0,1,0)
+Insert into [Sala] values('orchidea',50,0,1,0,1,0)
+GO
+
+Insert into [Evento] values(1,'Fare previdenza nell''era delle reti: le nuove sfide della welfare society',null,'seminario');
+Insert into [Evento] values(2,'IOT - l''avvento dell''internet delle cose', 'ASTER','corso');
+Insert into [Evento] values(3,'Industria 4.0, gli ambiti applicativi in italia', null,'seminario');
+Insert into [Evento] values(4,'Cybersecurity 360 Summit', 'Microsoft','corso');
+Insert into [Evento] values(5,'Automotive e cloud manufacturing', null,'seminario');
+Insert into [Evento] values(6,'Workshop di ricerca industriale', 'ASTER','corso');
+Insert into [Evento] values(7,'Innovazione responsabile: strumenti per le imprese e gli stakeholder', null,'seminario');
+Insert into [Evento] values(8,'Time: innovazione nella mobilità elettrica', 'Microsoft','corso');
+Insert into [Evento] values(9,'MicroEmiRo: biodiversità microbiologica per le aziende', null,'seminario');
+
+
+INSERT INTO [Prenotazione] values ('pnavi','orchidea','25-07-2017 08:00:00','25-07-2017 12:00:00',5,'pnavi')
+INSERT INTO [Prenotazione] values ('rventi','violetta','25-07-2017 08:00:00','25-07-2017 17:00:00',1,'mrossi')
+INSERT INTO [Prenotazione] values ('pnavi','gelsomino','25-07-2017 10:00:00','25-07-2017 13:00:00',3,'mrossi')
+
+INSERT INTO [Prenotazione] values ('rventi','orchidea','26-07-2017 08:00:00','26-07-2017 17:00:00',5,'mrossi')
+INSERT INTO [Prenotazione] values ('gtrota','rosa bianca','26-07-2017 10:00:00','26-07-2017 13:00:00',1,'mrossi')
+
+INSERT INTO [Prenotazione] values ('rventi','gardenia','27-07-2017 08:00:00','27-07-2017 17:00:00',2,'mrossi')
+INSERT INTO [Prenotazione] values ('gtrota','bocca di leone','27-07-2017 10:00:00','27-07-2017 13:00:00',4,'mrossi')
+
+INSERT INTO [Prenotazione] values ('rventi','gelsomino','28-07-2017 08:00:00','28-07-2017 17:00:00',2,'mrossi')
+INSERT INTO [Prenotazione] values ('pnavi','gardenia','28-07-2017 10:00:00','28-07-2017 13:00:00',4,'mrossi')
+
+
+
+INSERT INTO [Prenotazione] values ('gtrota','gelsomino','11-09-2017 12:00:00','11-09-2017 13:00:00',6,'pnavi')
+INSERT INTO [Prenotazione] values ('vparri','gelsomino','11-09-2017 15:00:00','11-09-2017 17:00:00',8,'pnavi')
+INSERT INTO [Prenotazione] values ('pnavi','gardenia','11-09-2017 08:00:00','11-09-2017 12:00:00',2,'pnavi')
+
+INSERT INTO [Prenotazione] values ('rventi','bocca di leone','12-09-2017 15:00:00','12-09-2017 17:00:00',4,null)
+
+
+INSERT INTO [Prenotazione] values ('gtrota','ibisco','21-09-2017 12:00:00','21-09-2017 13:00:00',7,'mrossi')
+INSERT INTO [Prenotazione] values ('vparri','ibisco','21-09-2017 15:00:00','21-09-2017 17:00:00',8,'mrossi')
+INSERT INTO [Prenotazione] values ('pnavi','violetta','21-09-2017 08:00:00','21-09-2017 12:00:00',9,'mrossi')
+INSERT INTO [Prenotazione] values ('rventi','rosa bianca','21-09-2017 15:00:00','21-09-2017 17:00:00',6,null)
+
+INSERT INTO [Prenotazione] values ('gtrota','violetta','22-09-2017 09:00:00','22-09-2017 13:00:00',3,null)
+INSERT INTO [Prenotazione] values ('vparri','rosa bianca','22-09-2017 16:00:00','22-09-2017 17:00:00',4,null)
+INSERT INTO [Prenotazione] values ('pnavi','giacinto','22-09-2017 08:00:00','22-09-2017 12:00:00',4,'pnavi')
+
+INSERT INTO [Prenotazione] values ('pnavi','giacinto','25-09-2017 08:00:00','25-09-2017 12:00:00',6,null)
+INSERT INTO [Prenotazione] values ('rventi','violetta','25-09-2017 08:00:00','25-09-2017 17:00:00',9,'mrossi')
+INSERT INTO [Prenotazione] values ('gtrota','gelsomino','25-09-2017 10:00:00','25-09-2017 13:00:00',8,'pnavi')
+
+INSERT INTO [Prenotazione] values ('rventi','giacinto','26-09-2017 08:00:00','26-09-2017 17:00:00',8,'mrossi')
+INSERT INTO [Prenotazione] values ('gtrota','rosa bianca','26-09-2017 10:00:00','26-09-2017 13:00:00',4,'mrossi')
+
+INSERT INTO [Prenotazione] values ('rventi','ibisco','27-09-2017 08:00:00','27-09-2017 17:00:00',1,'mrossi')
+INSERT INTO [Prenotazione] values ('gtrota','bocca di leone','27-09-2017 10:00:00','27-09-2017 13:00:00',4,'mrossi')
+
+INSERT INTO [Prenotazione] values ('rventi','violetta','28-09-2017 08:00:00','28-09-2017 17:00:00',9,'mrossi')
+INSERT INTO [Prenotazione] values ('gtrota','gardenia','28-09-2017 10:00:00','28-09-2017 13:00:00',8,'mrossi')
+
+
+INSERT INTO [Prenotazione] values ('gtrota','giacinto','21-10-2017 12:00:00','21-10-2017 13:00:00',3,'pnavi')
+INSERT INTO [Prenotazione] values ('vparri','giacinto','21-10-2017 15:00:00','21-10-2017 17:00:00',1,'pnavi')
+INSERT INTO [Prenotazione] values ('pnavi','gardenia','21-10-2017 08:00:00','21-10-2017 12:00:00',2,'mrossi')
+INSERT INTO [Prenotazione] values ('rventi','orchidea','21-10-2017 15:00:00','21-10-2017 17:00:00',4,'pnavi')
+
+INSERT INTO [Prenotazione] values ('gtrota','giacinto','22-10-2017 09:00:00','22-10-2017 13:00:00',2,null)
+INSERT INTO [Prenotazione] values ('vparri','rosa bianca','22-10-2017 16:00:00','22-10-2017 17:00:00',3,null)
+INSERT INTO [Prenotazione] values ('pnavi','orchidea','22-10-2017 08:00:00','22-10-2017 12:00:00',4,'pnavi')
+INSERT INTO [Prenotazione] values ('vparri','orchidea','14-01-2020 08:00:00','14-01-2020 12:00:00',4,'vparri')
+GO
+
+/*Modificare la tabella Prenotazione aggiungendo un campo durata che riporti le ore di durata della prenotazione;
+ inoltre, aggiungere un vincolo che impedisca di effettuare prenotazioni con il giorno di fine diverso dal giorno di inizio. */
+
+ ALTER TABLE Prenotazione
+ ADD durata AS datediff(hh,inizio,fine)
+
+ ALTER TABLE Prenotazione
+ ADD CONSTRAINT controllaP CHECK
+ (DAY(inizio) = DAY(fine) AND MONTH(inizio) = MONTH(fine) AND YEAR(inizio) = YEAR(fine))
+
+ /*
+ Riportare i dati di tutte le prenotazioni confermate e i dati delle sale per il mese attuale.
+   Ordinare il risultato per sala e orario di inizio della prenotazione. (
+ */
+
+ SELECT P.*,S.*
+ FROM Prenotazione P, Sala S
+ WHERE S.nome = P.nome
+ AND P.adminC IS NOT NULL
+ AND YEAR(P.inizio) = YEAR(getdate())
+ AND MONTH(P.inizio) = MONTH(getdate())
+ ORDER BY S.nome, P.inizio
+ GO
+
+ /*Selezionare per le prenotazioni organizzate per eventi di tipo seminario, il nome dell’utente che ha fatto la prenotazione, 
+ i dati di inizio della prenotazione, la durata della prenotazione, il nome e il numero di posti della sala prenotata, il titolo 
+ dell'evento. Ordinare il risultato per utente e capienza della sala.*/
+
+SELECT P.username AS NOME,P.inizio,	P.durata, S.nome, S.capienza AS CAPIENZA, E.titolo
+FROM Prenotazione P JOIN Sala S ON (S.nome = P.nome) JOIN Evento E ON (E.id = P.evento )
+WHERE E.tipo = 'seminario'
+ORDER BY P.username ASC, S.capienza ASC
+GO
+/* Riportare i dati dell’utente (non amministratore) che ha effettuato il maggior numero di prenotazioni a luglio 2017 e il numero di prenotazioni effettuate*/
+
+SELECT TOP 1 U.username, COUNT(P.nome) AS 'NUMERO PRENOTAZIONI'
+FROM Utente U JOIN Prenotazione P ON(U.username = P.username)
+WHERE U.livello = 'user' AND YEAR(P.inizio) = 2017 AND MONTH(P.inizio) = 7
+GROUP BY U.username
+ORDER BY COUNT(p.nome) DESC
+
+/*Selezionare i dati degli utenti che hanno effettuato prenotazioni in tutte le sale del centro polifunzionale*/
+/*selezionare i dati degli utenti che non hanno effettuato una prenotazione in nessuna sala del centro diverso da polifunzionale*/
+
+SELECT U.username
+FROM Utente U 
+WHERE NOT EXISTS(
+		SELECT *
+		FROM Sala S
+		WHERE NOT EXISTS(
+			SELECT * 
+			FROM Prenotazione P
+			WHERE P.nome= S.nome
+			AND P.username = U.username
+		)
+)
+GO
+/*Si crei una vista REPORT_MENSILE_SEMINARI che riporti per ogni seminario il titolo, il numero di volte in cui si è tenuto (prenotazione confermata),
+ il numero di sale (diverse) prenotate, ed il numero di ore medio di durata della prenotazione*/
+
+
+ CREATE VIEW REPORT_MENSILE_SEMINARI AS
+ SELECT E.titolo, COUNT(P.adminC) AS 'NUMERO OCCORRENZE', COUNT(DISTINCT P.nome) AS 'NUMERO SALE', AVG(P.durata) AS 'DURATA MEDIA'
+ FROM Evento E JOIN Prenotazione P ON (E.id = P.evento)
+ WHERE E.tipo = 'seminario'
+ AND P.adminC IS NOT NULL
+ GROUP BY E.titolo
+
+GO
+
+/*
+Creare una gerarchia degli eventi che li suddivida nelle tabelle Seminario e Corso. Si tenga in considerazione che lo sponsor sarà presente solo per i Corsi
+*/
+
+CREATE TABLE Corso(
+	id INT PRIMARY KEY REFERENCES Evento,
+	sponsor VARCHAR(100) NOT NULL
+)
+GO
+
+CREATE TABLE Seminario(
+	id INT PRIMARY KEY REFERENCES Evento
+)
+
+INSERT INTO Corso 
+SELECT id,sponsor FROM Evento WHERE tipo = 'corso'
+
+INSERT INTO Seminario
+SELECT id FROM EVENTO WHERE tipo = 'seminario'
+
+ALTER TABLE Evento DROP COLUMN tipo,sponsor
+
+SELECT * FROM Evento 
+SELECT * FROM Corso
+SELECT * FROM Seminario
