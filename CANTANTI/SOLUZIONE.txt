@@ -1,0 +1,183 @@
+SET NOCOUNT ON
+SET DATEFORMAT dmy
+
+USE master
+GO
+
+IF EXISTS(SELECT name FROM dbo.sysdatabases WHERE name = 'Cantanti')
+	DROP DATABASE [Cantanti]
+GO
+
+CREATE DATABASE [Cantanti]
+GO
+
+USE [Cantanti]
+GO
+
+CREATE TABLE CANTANTE(
+	nomeCantante VARCHAR(50) PRIMARY KEY,
+	genere VARCHAR(50) NOT NULL,
+	dataNascita DATE NOT NULL
+)
+GO
+
+CREATE TABLE COMPETIZIONE(
+	numComp VARCHAR(50) NOT NULL,
+	annoEdizione INT NOT NULL,
+	luogo VARCHAR(50),
+	presentatore VARCHAR(50),
+	PRIMARY KEY(numComp,annoEdizione)
+)
+GO
+
+CREATE TABLE ISCRITTO(
+	cod INT IDENTITY PRIMARY KEY,
+	numComp VARCHAR(50) NOT NULL,
+	annoEdizione INT NOT NULL,
+	nomeCantante VARCHAR(50) NOT NULL,
+	posizione INT,
+	FOREIGN KEY (nomeCantante) REFERENCES CANTANTE(nomeCantante),
+	FOREIGN KEY (numComp,annoEdizione) REFERENCES COMPETIZIONE(numComp,annoEdizione)
+)
+GO
+
+
+INSERT INTO CANTANTE VALUES('Robert Plant','ROCK','01-01-1988')
+INSERT INTO CANTANTE VALUES('Freddie Mercury','ROCK','01-01-1994')
+INSERT INTO CANTANTE VALUES('Paul Rodgers','ROCK','01-01-1987')
+INSERT INTO CANTANTE VALUES('Ian Gillan','ROCK','01-01-1987')
+
+INSERT INTO CANTANTE VALUES('Chef Ragoo','RAP','01-01-1984')
+INSERT INTO CANTANTE VALUES('DJ Lugi','RAP','01-01-1984')
+INSERT INTO CANTANTE VALUES('Don Joe','RAP','01-01-1982')
+INSERT INTO CANTANTE VALUES('DrefGold','RAP','01-01-1982')
+INSERT INTO CANTANTE VALUES('YOUNG SIGNORINO','RAP','06-06-1996')
+
+
+INSERT INTO COMPETIZIONE VALUES('SANREMO','2015','SANREMO','MORANDI')
+INSERT INTO COMPETIZIONE VALUES('SANREMO','2016','SANREMO','MORANDI')
+INSERT INTO COMPETIZIONE VALUES('FESTIVALBAR','2014','ROMA','AMADEUS')
+INSERT INTO COMPETIZIONE VALUES('FESTIVALBAR','2013','MILANO','AMADEUS')
+INSERT INTO COMPETIZIONE VALUES('WIND MUSIC','2016','BOLOGNA','BONOLIS')
+INSERT INTO COMPETIZIONE VALUES('WIND MUSIC','2015','GENOVA','BONOLIS')
+
+
+INSERT INTO ISCRITTO VALUES('SANREMO','2015','Robert Plant',1)
+INSERT INTO ISCRITTO VALUES('SANREMO','2015','Freddie Mercury',2)
+INSERT INTO ISCRITTO VALUES('SANREMO','2015','Chef Ragoo',4)
+INSERT INTO ISCRITTO VALUES('SANREMO','2015','DJ Lugi',3)
+
+INSERT INTO ISCRITTO VALUES('SANREMO','2016','Don Joe',1)
+INSERT INTO ISCRITTO VALUES('SANREMO','2016','DJ Lugi',2)
+INSERT INTO ISCRITTO VALUES('SANREMO','2016','YOUNG SIGNORINO',null)
+INSERT INTO ISCRITTO VALUES('SANREMO','2016','DrefGold',5)
+
+
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2014','Robert Plant',1)
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2014','Freddie Mercury',2)
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2014','Paul Rodgers',3)
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2014','Chef Ragoo',null)
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2014','DrefGold',null)
+
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2013','Freddie Mercury',3)
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2013','Paul Rodgers',2)
+INSERT INTO ISCRITTO VALUES('FESTIVALBAR','2013','DrefGold',1)
+
+INSERT INTO ISCRITTO VALUES('WIND MUSIC','2015','Robert Plant',3)
+INSERT INTO ISCRITTO VALUES('WIND MUSIC','2015','Freddie Mercury',1)
+INSERT INTO ISCRITTO VALUES('WIND MUSIC','2015','Paul Rodgers',2)
+
+INSERT INTO ISCRITTO VALUES('WIND MUSIC','2016','Freddie Mercury',2)
+INSERT INTO ISCRITTO VALUES('WIND MUSIC','2016','Paul Rodgers',1)
+INSERT INTO ISCRITTO VALUES('WIND MUSIC','2016','DrefGold',null)
+
+/*vincolo cantante maggiorenne*/
+
+ALTER TABLE CANTANTE
+ADD CONSTRAINT checkMaggiorenne CHECK(datediff(year,dataNascita,getdate())>=18)
+GO
+
+/*vincolo iscritto*/
+
+ALTER TABLE ISCRITTO
+ADD CONSTRAINT checkunico UNIQUE(numComp,annoEdizione,nomeCantante)
+GO
+
+/*
+Nel 2017 si è tenuta la competizione ‘eurovision’ a cui hanno partecipato i cantanti: Robert Plant, Freddie Mercury, Paul Rodgers, Chef Ragoo, Calcutta (Rock, nato il 06-04-1989)
+La competizione è stata vinta da Plant, seguito da Calcutta e Mercury, mentre gli altri partecipanti non si sono presentati.
+
+
+*/
+
+INSERT INTO COMPETIZIONE VALUES ('eurovision','2017','Modena','Jerry Scotti')
+
+INSERT INTO CANTANTE VALUES ('Calcutta','Rock','06-04-1989')
+
+INSERT INTO ISCRITTO VALUES ('eurovision','2017','Robert Plant',1)
+INSERT INTO ISCRITTO VALUES ('eurovision','2017','Calcutta',2)
+INSERT INTO ISCRITTO VALUES ('eurovision','2017','Freddie Mercury',3)
+INSERT INTO ISCRITTO VALUES ('eurovision','2017','Paul Rodgers',null)
+INSERT INTO ISCRITTO VALUES ('eurovision','2017','Chef Ragoo',null)
+
+ GO
+
+ /*Selezionare i nomi delle competizioni per le quali in ogni edizione c'è stato almeno un ritirato*/
+ /*selezionare i nomi delle competizioni per le quali non ci sono persone in ogni edizione che non si sono ritirate*/
+ SELECT DISTINCT C.numComp
+ FROM COMPETIZIONE C
+ WHERE NOT EXISTS(
+			SELECT *
+			FROM COMPETIZIONE CO
+			WHERE CO.numComp = C.numComp
+			AND NOT EXISTS(
+					SELECT *
+					FROM ISCRITTO I
+					WHERE I.numComp = C.numComp
+					AND I.posizione IS NULL
+			)
+)
+GO
+
+/*Selezionare il nome dei cantanti che hanno vinto sia a Sanremo che Festivalbar.*/
+
+SELECT C.nomeCantante
+FROM CANTANTE C
+WHERE EXISTS(
+	SELECT *
+	FROM ISCRITTO I
+	WHERE I.nomeCantante = C.nomeCantante
+	AND I.posizione = 1
+	AND I.numComp = 'SANREMO'
+)
+AND EXISTS(
+	SELECT *
+	FROM ISCRITTO I
+	WHERE I.nomeCantante = C.nomeCantante
+	AND I.posizione = 1
+	AND I.numComp = 'FESTIVALBAR'
+)
+GO
+/*. Definire una vista, CARRIERA, che riporti per ogni cantante il numero di volte in cui si è ritirato e in cui è salito sul podio (ovvero si è classificato nelle prime tre posizioni). */
+
+CREATE VIEW CARRIERA AS
+SELECT C.nomeCantante, (SELECT COUNT(*) 
+						FROM ISCRITTO I 
+						WHERE I.nomeCantante = C.nomeCantante
+						AND I.posizione IS NULL
+						)AS RITIRATO,
+						(SELECT COUNT(*)
+						FROM ISCRITTO I
+						WHERE I.nomeCantante = C.nomeCantante
+						AND I.posizione<=3
+						) AS PODIO
+FROM CANTANTE C
+GO
+
+/*Modificare la tabella ISCRITTO in modo che a seguito dell’eliminazione di un cantante, venga eliminata anche la sua iscrizione alle competizioni*/
+
+ALTER TABLE ISCRITTO
+ADD CONSTRAINT cancella FOREIGN KEY (nomeCantante) REFERENCES CANTANTE ON DELETE CASCADE
+GO
+
+
